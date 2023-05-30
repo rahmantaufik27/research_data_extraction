@@ -1,28 +1,21 @@
 from flask import Flask, render_template, request, url_for, flash, redirect
+from extract import lppmunila_year, gscholar_idauthor
 import uvicorn
 
 app = Flask(__name__)
 
-
 @app.route('/')
 def main():
-    return 'main'
+    return 'hellomotherfather'
 
-@app.route('/search')
+@app.route('/lppmunila_year')
 def search():
-    return 'search'
+    return 'lppmunila_year'
 
-@app.route('/update')
+@app.route('/gscholar_idauthor')
 def update():
-    return 'update'
-
-@app.route('/select')
-def update():
-    return 'select'
-
-app.route('/extract')
-def update():
-    return 'extract'
+    gscholar_idauthor
+    return 'gscholar_idauthor'
 
 # if __name__ == "__main__":
-#     uvicorn.run("serve:app", reload=True, host="0.0.0.0", port=8000)
+#     uvicorn.run("wsgi:app", reload=True, host="0.0.0.0", port=5000)
