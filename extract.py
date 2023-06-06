@@ -94,6 +94,60 @@ def gscholar_idauthor():
     with open(f"data/data_crawling_gscholar_idauthor_{today}.json", "w") as outfile:
         outfile.write(json_articles)
 
+# def gscholar_idauthor_telegrambot():
+    # header = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0'} 
+    
+    # idgs = 'sXyP1GYAAAAJ'
+    # url_author = f"https://scholar.google.com/citations?user={idgs}"
+    # response = requests.get(url_author, headers=header)
+    # soup = BeautifulSoup(response.content, 'lxml')
+    # url_articles = []
+    # for a in soup.find_all('a', class_="gsc_a_at"):
+    #     link_article = f"https://scholar.google.com/{a['href']}"
+    #     # print(link_article)
+    #     url_articles.append(link_article)
+    # print("Total articles: ", len(url_articles))
+
+    # # crawling information from each article link into dictionary, list, and json later
+    # articles = []
+    # df = pd.DataFrame()
+    # for idx, url in enumerate(url_articles):
+    #     # print(f"{idx}. {url}")
+    #     dict = {}
+
+    #     # obtain id author's google scholar 
+    #     dict["idgs"] = idgs
+
+    #     # obtain title
+    #     response = requests.get(url, headers=header)
+    #     soup = BeautifulSoup(response.content, 'lxml')
+    #     title = soup.find("div",{"id":"gsc_oci_title"}).get_text()
+    #     dict["title"] = title
+        
+    #     # obtain other informations
+    #     fields = []
+    #     for val in soup.findAll('div', attrs={'class':'gsc_oci_field'}):
+    #         fields.append(val.text)
+    #     values = []
+    #     for val in soup.findAll('div', attrs={'class':'gsc_oci_value'}):
+    #         values.append(val.text)
+
+    #     for key in fields:
+    #         for value in values:
+    #             dict[key] = value
+    #             values.remove(value)
+    #             break
+        
+    #     articles.append(dict)
+    #     # print(str(dict))
+
+    # json_articles = json.dumps(articles, indent=4)
+    # # print(json_articles)
+
+    # # convert to json
+    # with open(f"data/data_crawling_gscholar_idauthor_{today}.json", "w") as outfile:
+    #     outfile.write(json_articles)
+
 
 if __name__ == "__main__":
     gscholar_idauthor()
