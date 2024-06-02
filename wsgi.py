@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, url_for, flash, redirect
-from extract import lppmunila_year, gscholar_idauthor
+from extract import lppmunila_year, gscholar_idauthor, sinta_univ
 import uvicorn
 
 app = Flask(__name__)
