@@ -50,14 +50,16 @@ def lppmunila_year():
     df[columns].to_csv(f"data/data_crawling_lppmunila_year_{today}.csv")
 
 def gscholar_idauthor():
+    print("masukkk")
     # initiate and call the browser for scraping
     # set the header
-    ua = UserAgent(verify_ssl=False)
+    # ua = UserAgent(verify_ssl=False)
+    ua = UserAgent()
     userAgent = ua.random
     header = {'User-Agent': userAgent}
     # set the browser option 
     chrome_options = Options()
-    # chrome_options.headless = True # comment this line to see the browser running
+    chrome_options.headless = True # comment this line to see the browser running
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--incognito")
     chrome_options.add_argument("--no-sandbox")
@@ -71,7 +73,8 @@ def gscholar_idauthor():
     driver.maximize_window()
     
     # access article link from authors
-    list_idgs = ['sXyP1GYAAAAJ', 'SdfFZQYAAAAJ', 'x3ceWPkAAAAJ']
+    # list_idgs = ['sXyP1GYAAAAJ', 'SdfFZQYAAAAJ', 'x3ceWPkAAAAJ']
+    list_idgs = ['sXyP1GYAAAAJ']
     articles = []
     for idgs in list_idgs:
         url_author = f"https://scholar.google.com/citations?user={idgs}"

@@ -6,7 +6,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def main():
-    return 'hellomotherfather'
+    return 'hello mother father'
 
 @app.route('/lppmunila_year')
 def search():
@@ -14,8 +14,9 @@ def search():
 
 @app.route('/gscholar_idauthor')
 def update():
-    gscholar_idauthor
+    gscholar_idauthor()
     return 'gscholar_idauthor'
 
-# if __name__ == "__main__":
-#     uvicorn.run("wsgi:app", reload=True, host="0.0.0.0", port=5000)
+if __name__ == "__main__":
+    app.run(debug=True)
+#     uvicorn.run("wsgi:app", reload=True, host="localhost", port=5050)
