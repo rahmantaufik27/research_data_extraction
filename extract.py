@@ -20,6 +20,25 @@ from selenium.webdriver.support import expected_conditions as EC
 
 today = date.today()
 
+# initiate and call the browser for scraping
+# set the header
+# ua = UserAgent(verify_ssl=False)
+ua = UserAgent()
+userAgent = ua.random
+header = {'User-Agent': userAgent}
+# set the browser option 
+chrome_options = Options()
+chrome_options.headless = True # uncomment this line to see the browser running
+chrome_options.add_argument("--headless")
+chrome_options.add_argument("--incognito")
+chrome_options.add_argument("--no-sandbox")
+chrome_options.add_argument('--ignore-certificate-errors')
+chrome_options.add_argument("--disable-dev-shm-usage")
+chrome_options.add_argument("--disable-gpu")
+chrome_options.add_argument("--disable-setuid-sandbox")
+chrome_options.add_argument("--log-level=1")
+chrome_options.add_argument(f'user-agent={userAgent}')
+
 def lppmunila_year():
     # create list year for url
     list_year = ['3276', '3018', '2107', '1985', '1977', '1010', '0223', '0220', '0214', '0207', '0202', '0201', '0200', '0029', '0028', '0022', '0021', '0020', '0017', '0016', '0015']
@@ -50,7 +69,6 @@ def lppmunila_year():
     df[columns].to_csv(f"data/data_crawling_lppmunila_year_{today}.csv")
 
 def gscholar_idauthor():
-    print("masukkk")
     # initiate and call the browser for scraping
     # set the header
     # ua = UserAgent(verify_ssl=False)
@@ -199,7 +217,8 @@ def sinta_univ():
     USERNAME_SINTA = os.getenv("USERNAME_SINTA")
     PASSWORD_SINTA = os.getenv("PASSWORD_SINTA")
 
-    driver = webdriver.Chrome()
+    # chrome_driver_config()
+    driver = webdriver.Chrome(options=chrome_options)
 
     driver.get("https://sinta.kemdikbud.go.id/logins")
 
@@ -217,8 +236,10 @@ def sinta_univ():
     title = []
     pub = []
     year = []
+    creator = []
 
-    for page in range(1, 11):
+    for page in range(1, 2):
+        # for example 384 is UGM
         driver.get("https://sinta.kemdikbud.go.id/affiliations/profile/384?page=" + str(page) + "&view=scopus")
         articles = driver.find_elements(By.CLASS_NAME, "ar-list-item")
 
@@ -226,10 +247,22 @@ def sinta_univ():
             title.append(article.find_element(By.CLASS_NAME, "ar-title").text)
             pub.append(article.find_element(By.CLASS_NAME, "ar-pub").text)
             year.append(article.find_element(By.CLASS_NAME, "ar-year").text)
+            armeta = article.find_elements(By.CSS_SELECTOR, ".ar-meta [href]")
+            creator.append(armeta[2].text)
 
-    df = pd.DataFrame(data={'title': title, 'pub': pub, 'year': year})
-    df.to_excel("output/data.xlsx")
+    df = pd.DataFrame(data={'title': title, 'pub': pub, 'year': year, 'creator': creator})
+    df['creator'] = df["creator"].str.replace("Creator : ", "")
+    df.to_csv(f"data/data_crawling_sinta_univ_{today}.csv")
 
-if __name__ == "__main__":
-    gscholar_idauthor()
+def sinta_author():
+    load_dotenv()
+
+    USERNAME_SINTA = os.getenv("USERNAME_SINTA")
+    PASSWORD_SINTA = os.getenv("PASSWORD_SINTA")
+    
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+    driver.maximize_window()
+
+# if __name__ == "__main__":
+#     gscholar_idauthor()
 
