@@ -1,8 +1,11 @@
-from flask import Flask, render_template, request, url_for, flash, redirect
+from flask import Flask, render_template, request, url_for, flash, redirect, send_file
 from extract import lppmunila_year, gscholar_idauthor, sinta_univ, sinta_author
-import uvicorn
+from datetime import date
+from io import BytesIO
+import pandas as pd
 
 app = Flask(__name__)
+today = date.today()
 
 @app.route('/')
 def main():
@@ -25,9 +28,13 @@ def extract_sinta_univ():
 
 @app.route('/sinta_author')
 def extract_sinta_author():
-    sinta_author()
-    return 'sinta author done'
+    total_data, df = sinta_author()
+    print(total_data)
+    return send_file(
+                BytesIO(df.to_csv(index=False, encoding='utf-8').encode()),
+                as_attachment=True,
+                download_name=f'data_crawling_sinta_author_{today}',
+                mimetype='text/excel')
 
 if __name__ == "__main__":
     app.run(debug=True)
-#     uvicorn.run("wsgi:app", reload=True, host="localhost", port=5050)

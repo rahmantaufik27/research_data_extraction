@@ -71,26 +71,8 @@ def lppmunila_year():
     df[columns].to_csv(f"data/data_crawling_lppmunila_year_{today}.csv")
 
 def gscholar_idauthor():
-    # initiate and call the browser for scraping
-    # set the header
-    # ua = UserAgent(verify_ssl=False)
-    ua = UserAgent()
-    userAgent = ua.random
-    header = {'User-Agent': userAgent}
-    # set the browser option 
-    chrome_options = Options()
-    chrome_options.headless = True # comment this line to see the browser running
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--incognito")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument('--ignore-certificate-errors')
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--disable-gpu")
-    chrome_options.add_argument("--disable-setuid-sandbox")
-    chrome_options.add_argument("--log-level=1")
-    chrome_options.add_argument(f'user-agent={userAgent}')
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-    driver.maximize_window()
+    chrome_options = webdriver_config() 
+    driver = webdriver.Chrome(options=chrome_options)
     
     # access article link from authors
     # list_idgs = ['sXyP1GYAAAAJ', 'SdfFZQYAAAAJ', 'x3ceWPkAAAAJ']
@@ -220,8 +202,8 @@ def sinta_univ():
     PASSWORD_SINTA = os.getenv("PASSWORD_SINTA")
     ID_AFF_PROFIL = os.getenv("ID_AFF_SINTA")
 
-    # driver = webdriver.Chrome(options=chrome_options)
-    driver = webdriver.Chrome()
+    chrome_options = webdriver_config() 
+    driver = webdriver.Chrome(options=chrome_options)
 
     driver.get("https://sinta.kemdikbud.go.id/logins")
 
@@ -269,10 +251,8 @@ def sinta_author():
     USERNAME_SINTA = os.getenv("USERNAME_SINTA")
     PASSWORD_SINTA = os.getenv("PASSWORD_SINTA")
 
-    chrome_options = webdriver_config()
-    
+    chrome_options = webdriver_config() 
     driver = webdriver.Chrome(options=chrome_options)
-    driver.maximize_window()
 
     ID_PROFIL = os.getenv("ID_PROFILE_SINTA")
     url = f"https://sinta.kemdikbud.go.id/authors/profile/{ID_PROFIL}"
@@ -444,9 +424,7 @@ def sinta_author():
     df['author'] = df["author"].str.replace("Creator : ", "")
     df['author'] = df["author"].str.replace("Authors : ", "")
 
-    df.to_csv(f"data/data_crawling_sinta_author_{today}.csv", index=False)
+    # df.to_excel(f"data/data_crawling_sinta_author_{today}.xlsx", index=False)
 
-
-# if __name__ == "__main__":
-#     gscholar_idauthor()
+    return len(df), df
 
