@@ -1,8 +1,10 @@
 from flask import Flask, render_template, request, url_for, flash, redirect, send_file
-from extract import lppmunila_year, gscholar_idauthor, sinta_univ, sinta_author
+from extract import lppmunila_year, gscholar_idauthor, sinta_univ, sinta_author, SintaAuthor
 from datetime import date
 from io import BytesIO
 import pandas as pd
+import os
+from dotenv import load_dotenv
 
 app = Flask(__name__)
 today = date.today()
@@ -26,6 +28,19 @@ def extract_sinta_univ():
     sinta_univ()
     return 'Done'
 
+@app.route('/sinta_author2')
+def sinta_author2():
+    uname = os.getenv("USERNAME_SINTA")
+    pw = os.getenv("PASSWORD_SINTA")
+    ids = os.getenv("ID_PROFILE_SINTA")
+    # url = "https://sinta.kemdikbud.go.id"
+    sinta_author_data = SintaAuthor(uname, pw, ids)
+    # sinta_author_data.sinta_login()
+    sinta_author_data.sinta_scopus()
+    sinta_author_data.sinta_wos()
+    print(sinta_author_data.transform_dataframe())
+    return render_template('sinta_author.html')
+
 @app.route('/sinta_author_base', methods=['POST', 'GET'])
 def sinta_author_base():
     if request.method == "POST":
@@ -41,7 +56,6 @@ def sinta_author_extract(uname=None, pw=None, ids=None):
     print(uname)
     print(pw)
     print(ids)
-    # return "haha"
     # total_data, df = sinta_author(uname, pw, ids)
     total_data, df = sinta_author()
     print(total_data)

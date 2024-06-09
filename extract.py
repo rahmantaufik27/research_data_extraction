@@ -245,6 +245,146 @@ def sinta_univ():
     df['creator'] = df["creator"].str.split(": ", expand=True)[1]
     df.to_csv(f"data/data_crawling_sinta_univ_{today}.csv")
 
+class SintaAuthor:
+
+    # set the list
+    title = []
+    pub = []
+    year = []
+    quartile = []
+    cited = []
+    creator = []
+    pub_type = []
+
+    # def __init__(self, username, password, id_profile, title, pub, year, quartile, cited, creator, pub_type):
+    #     self.username = username
+    #     self.password = password
+    #     self.id_profile = id_profile
+    #     self.title.append(title)
+    #     self.pub.append(pub)
+    #     self.year.append(year)
+    #     self.quartile.append(quartile)
+    #     self.cited.append(cited)
+    #     self.creator.append(creator)
+    #     self.pub_type.append(pub_type)
+
+    def __init__(self, uname, pw, ids):
+        self.uname = uname
+        self.pw = pw
+        self.ids = ids
+        # self.url = url
+
+    def sinta_scopus(self):
+        # open and setting the web driver chrome
+        chrome_options = webdriver_config() 
+        driver = webdriver.Chrome(options=chrome_options)
+        # login
+        driver.get("https://sinta.kemdikbud.go.id/logins")
+        username = driver.find_element(By.NAME, "username")
+        username.send_keys(self.uname)
+        password = driver.find_element(By.NAME, "password")
+        password.send_keys(self.pw)
+        WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.XPATH, "//button[@type='submit']"))).click()
+        # access the scopus profile web 
+        view = "scopus"
+        url = f"https://sinta.kemdikbud.go.id/authors/profile/{self.ids}/?view={view}"
+        driver.get(url)
+
+        # get page total
+        page_total = driver.find_element(By.XPATH, "//div[@class='profile-article']//nav[@aria-label='pagination-sample']//div[@class='text-center pagination-text']//small").text
+        page_total = page_total.split()[3]
+        page_total = page_total.replace('.', '')
+        page_total = int(page_total)+1
+        print(view+": "+str(page_total))
+
+        # get all informations for each pages
+        for page in range(1, page_total):
+            full_url = f"https://sinta.kemdikbud.go.id/authors/profile/{self.ids}/?page={page}&view={view}"
+            print(full_url)
+            driver.get(full_url)
+            driver.implicitly_wait(60)
+            time.sleep(5)
+
+            # page = requests.get(full_url)
+            # soup = BeautifulSoup(page.content, "html.parser")
+            # titles = soup.find_all("div", class_="ar-title")
+            # print(len(titles))
+            # for title in titles:
+            #     title_element = title.find("a").text
+            #     print(title_element)
+            # time.sleep(5)
+
+            articles = driver.find_elements(By.CLASS_NAME, "ar-list-item")
+            
+            for article in articles:
+                self.title.append(article.find_element(By.CLASS_NAME, "ar-title").text)
+                # print(article.find_element(By.CLASS_NAME, "ar-title").text)
+                # pub.append(article.find_element(By.CLASS_NAME, "ar-pub").text)
+                # quartile.append(article.find_element(By.CLASS_NAME, "ar-quartile").text)
+                # year.append(article.find_element(By.CLASS_NAME, "ar-year").text)
+                # cited.append(article.find_element(By.CLASS_NAME, "ar-cited").text)
+                # armeta = article.find_elements(By.CSS_SELECTOR, ".ar-meta [href]")
+                # creator.append(armeta[3].text)
+                # pub_type.append(view)
+
+    def sinta_wos(self):
+        # open and setting the web driver chrome
+        chrome_options = webdriver_config() 
+        driver = webdriver.Chrome(options=chrome_options)
+        # login
+        driver.get("https://sinta.kemdikbud.go.id/logins")
+        username = driver.find_element(By.NAME, "username")
+        username.send_keys(self.uname)
+        password = driver.find_element(By.NAME, "password")
+        password.send_keys(self.pw)
+        WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.XPATH, "//button[@type='submit']"))).click()
+        # access the scopus profile web 
+        view = "wos"
+        url = f"https://sinta.kemdikbud.go.id/authors/profile/{self.ids}/?view={view}"
+        driver.get(url)
+
+        # get page total
+        page_total = driver.find_element(By.XPATH, "//div[@class='profile-article']//nav[@aria-label='pagination-sample']//div[@class='text-center pagination-text']//small").text
+        page_total = page_total.split()[3]
+        page_total = page_total.replace('.', '')
+        page_total = int(page_total)+1
+        print(view+": "+str(page_total))
+
+        # get all informations for each pages
+        for page in range(1, page_total):
+            full_url = f"https://sinta.kemdikbud.go.id/authors/profile/{self.ids}/?page={page}&view={view}"
+            print(full_url)
+            driver.get(full_url)
+            driver.implicitly_wait(60)
+            time.sleep(5)
+
+            # page = requests.get(full_url)
+            # soup = BeautifulSoup(page.content, "html.parser")
+            # titles = soup.find_all("div", class_="ar-title")
+            # print(len(titles))
+            # for title in titles:
+            #     title_element = title.find("a").text
+            #     print(title_element)
+            # time.sleep(5)
+
+            articles = driver.find_elements(By.CLASS_NAME, "ar-list-item")
+            
+            for article in articles:
+                self.title.append(article.find_element(By.CLASS_NAME, "ar-title").text)
+                # print(article.find_element(By.CLASS_NAME, "ar-title").text)
+                # pub.append(article.find_element(By.CLASS_NAME, "ar-pub").text)
+                # quartile.append(article.find_element(By.CLASS_NAME, "ar-quartile").text)
+                # year.append(article.find_element(By.CLASS_NAME, "ar-year").text)
+                # cited.append(article.find_element(By.CLASS_NAME, "ar-cited").text)
+                # armeta = article.find_elements(By.CSS_SELECTOR, ".ar-meta [href]")
+                # creator.append(armeta[3].text)
+                # pub_type.append(view)
+    
+    def transform_dataframe(self):
+        return self.title
+
+
+
 def sinta_author():
     load_dotenv()
 
@@ -252,7 +392,6 @@ def sinta_author():
     PASSWORD_SINTA = os.getenv("PASSWORD_SINTA")
 
     chrome_options = webdriver_config() 
-    driver = webdriver.Chrome(options=chrome_options)
 
     ID_PROFIL = os.getenv("ID_PROFILE_SINTA")
     url = f"https://sinta.kemdikbud.go.id/authors/profile/{ID_PROFIL}"
