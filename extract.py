@@ -256,25 +256,13 @@ class SintaAuthor:
     creator = []
     pub_type = []
 
-    # def __init__(self, username, password, id_profile, title, pub, year, quartile, cited, creator, pub_type):
-    #     self.username = username
-    #     self.password = password
-    #     self.id_profile = id_profile
-    #     self.title.append(title)
-    #     self.pub.append(pub)
-    #     self.year.append(year)
-    #     self.quartile.append(quartile)
-    #     self.cited.append(cited)
-    #     self.creator.append(creator)
-    #     self.pub_type.append(pub_type)
-
     def __init__(self, uname, pw, ids):
         self.uname = uname
         self.pw = pw
         self.ids = ids
         # self.url = url
 
-    def sinta_scopus(self):
+    def sinta_login(self):
         # open and setting the web driver chrome
         chrome_options = webdriver_config() 
         driver = webdriver.Chrome(options=chrome_options)
@@ -285,8 +273,12 @@ class SintaAuthor:
         password = driver.find_element(By.NAME, "password")
         password.send_keys(self.pw)
         WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.XPATH, "//button[@type='submit']"))).click()
+        return driver
+
+    def sinta_bs(self, view):
+        # access the driver web chrome first and login
+        driver = self.sinta_login()
         # access the scopus profile web 
-        view = "scopus"
         url = f"https://sinta.kemdikbud.go.id/authors/profile/{self.ids}/?view={view}"
         driver.get(url)
 
@@ -305,41 +297,20 @@ class SintaAuthor:
             driver.implicitly_wait(60)
             time.sleep(5)
 
-            # page = requests.get(full_url)
-            # soup = BeautifulSoup(page.content, "html.parser")
-            # titles = soup.find_all("div", class_="ar-title")
-            # print(len(titles))
-            # for title in titles:
-            #     title_element = title.find("a").text
-            #     print(title_element)
-            # time.sleep(5)
+            soup = BeautifulSoup(driver.page_source, "lxml")
+            # page_total = soup.select_one(".profile-article > nav > div > small").text
 
-            articles = driver.find_elements(By.CLASS_NAME, "ar-list-item")
-            
-            for article in articles:
-                self.title.append(article.find_element(By.CLASS_NAME, "ar-title").text)
-                # print(article.find_element(By.CLASS_NAME, "ar-title").text)
-                # pub.append(article.find_element(By.CLASS_NAME, "ar-pub").text)
-                # quartile.append(article.find_element(By.CLASS_NAME, "ar-quartile").text)
-                # year.append(article.find_element(By.CLASS_NAME, "ar-year").text)
-                # cited.append(article.find_element(By.CLASS_NAME, "ar-cited").text)
-                # armeta = article.find_elements(By.CSS_SELECTOR, ".ar-meta [href]")
-                # creator.append(armeta[3].text)
-                # pub_type.append(view)
+            titles = soup.find_all("div", class_="ar-title")
+            print(len(titles))
+            for title in titles:
+                title_element = title.find("a").text
+                print(title_element)
+            time.sleep(5)    
 
-    def sinta_wos(self):
-        # open and setting the web driver chrome
-        chrome_options = webdriver_config() 
-        driver = webdriver.Chrome(options=chrome_options)
-        # login
-        driver.get("https://sinta.kemdikbud.go.id/logins")
-        username = driver.find_element(By.NAME, "username")
-        username.send_keys(self.uname)
-        password = driver.find_element(By.NAME, "password")
-        password.send_keys(self.pw)
-        WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.XPATH, "//button[@type='submit']"))).click()
+    def sinta_sel(self, view):
+        # access the driver web chrome first and login
+        driver = self.sinta_login()
         # access the scopus profile web 
-        view = "wos"
         url = f"https://sinta.kemdikbud.go.id/authors/profile/{self.ids}/?view={view}"
         driver.get(url)
 

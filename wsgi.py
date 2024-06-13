@@ -36,9 +36,10 @@ def sinta_author2():
     # url = "https://sinta.kemdikbud.go.id"
     sinta_author_data = SintaAuthor(uname, pw, ids)
     # sinta_author_data.sinta_login()
-    sinta_author_data.sinta_scopus()
-    sinta_author_data.sinta_wos()
-    print(sinta_author_data.transform_dataframe())
+    sinta_author_data.sinta_bs("scopus")
+    # sinta_author_data.sinta_bs(2, "scopus")
+    # sinta_author_data.sinta_sel("scopus")
+    # print(sinta_author_data.transform_dataframe())
     return render_template('sinta_author.html')
 
 @app.route('/sinta_author_base', methods=['POST', 'GET'])
