@@ -275,11 +275,11 @@ class SintaAuthor:
         WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.XPATH, "//button[@type='submit']"))).click()
         return driver
 
-    def sinta_bs(self, view):
+    def sinta_bs(self, pub_type):
         # access the driver web chrome first and login
         driver = self.sinta_login()
         # access the scopus profile web 
-        url = f"https://sinta.kemdikbud.go.id/authors/profile/{self.ids}/?view={view}"
+        url = f"https://sinta.kemdikbud.go.id/authors/profile/{self.ids}/?view={pub_type}"
         driver.get(url)
 
         # get page total
@@ -287,25 +287,56 @@ class SintaAuthor:
         page_total = page_total.split()[3]
         page_total = page_total.replace('.', '')
         page_total = int(page_total)+1
-        print(view+": "+str(page_total))
+        print(pub_type+": "+str(page_total))
 
         # get all informations for each pages
         for page in range(1, page_total):
-            full_url = f"https://sinta.kemdikbud.go.id/authors/profile/{self.ids}/?page={page}&view={view}"
+            full_url = f"https://sinta.kemdikbud.go.id/authors/profile/{self.ids}/?page={page}&view={pub_type}"
             print(full_url)
             driver.get(full_url)
             driver.implicitly_wait(60)
             time.sleep(5)
 
             soup = BeautifulSoup(driver.page_source, "lxml")
-            # page_total = soup.select_one(".profile-article > nav > div > small").text
+
+            # title = [titles.find("a").text for titles in soup.find_all("div", class_="ar-title")]
+            # pub = [pubs.text for pubs in soup.find_all("a", class_="ar-pub")]
+            # quartile = [quartiles.text for quartiles in soup.find_all("a", class_="ar-quartile")]
+            # year = [years.text for years in soup.find_all("a", class_="ar-year")]
+            # cited = [citeds.text for citeds in soup.find_all("a", class_="ar-cited")]
 
             titles = soup.find_all("div", class_="ar-title")
-            print(len(titles))
             for title in titles:
-                title_element = title.find("a").text
-                print(title_element)
-            time.sleep(5)    
+                self.title.append(title.find("a").text)
+            pubs = soup.find_all("a", class_="ar-pub")
+            for pub in pubs:
+                self.pub.append(pub.text)
+            quartiles = soup.find_all("a", class_="ar-quartile")
+            for quartile in quartiles:
+                self.quartile.append(quartile.text)
+            years = soup.find_all("a", class_="ar-year")
+            for year in years:
+                self.year.append(year.text)
+            citations = soup.find_all("a", class_="ar-cited")
+            for cited in citations:
+                self.cited.append(cited.text)
+            creators = soup.find_all("div", class_="ar-meta")
+            print(len(creators))
+            for creator in creators:
+                crs = creator.select('a:-soup-contains("Creator")')
+                # creator.find_all("a")
+                # crs = [cr.text for cr in creator.find_all("a")]
+                print(crs)
+            #     self.cited.append(creator[3].text)
+
+        # df = pd.DataFrame(data={'title': title, 'publication': pub, 'quartile / sinta': quartile, 'year': year, 'creator': creator, 'cited': cited})
+        df = pd.DataFrame(data={'title': self.title, 'publication': self.pub, 'quartile / sinta': self.quartile, 'year': self.year, 'cited': self.cited})
+        df['pub_type'] = pub_type
+        # df['author'] = df["author"].str.replace("Creator : ", "")
+        print(df)
+        # df['author'] = df["author"].str.replace("Authors : ", "")
+
+        return len(df), df
 
     def sinta_sel(self, view):
         # access the driver web chrome first and login

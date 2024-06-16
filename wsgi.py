@@ -30,41 +30,50 @@ def extract_sinta_univ():
 
 @app.route('/sinta_author2')
 def sinta_author2():
-    uname = os.getenv("USERNAME_SINTA")
-    pw = os.getenv("PASSWORD_SINTA")
-    ids = os.getenv("ID_PROFILE_SINTA")
-    # url = "https://sinta.kemdikbud.go.id"
-    sinta_author_data = SintaAuthor(uname, pw, ids)
-    # sinta_author_data.sinta_login()
-    sinta_author_data.sinta_bs("scopus")
-    # sinta_author_data.sinta_bs(2, "scopus")
-    # sinta_author_data.sinta_sel("scopus")
-    # print(sinta_author_data.transform_dataframe())
+    # uname = os.getenv("USERNAME_SINTA")
+    # pw = os.getenv("PASSWORD_SINTA")
+    # ids = os.getenv("ID_PROFILE_SINTA")
+    # # url = "https://sinta.kemdikbud.go.id"
+    # sinta_author_data = SintaAuthor(uname, pw, ids)
+    # # sinta_author_data.sinta_login()
+    # sinta_author_data.sinta_bs("scopus")
+    # # sinta_author_data.sinta_bs(2, "scopus")
+    # # sinta_author_data.sinta_sel("scopus")
+    # # print(sinta_author_data.transform_dataframe())
     return render_template('sinta_author.html')
 
 @app.route('/sinta_author_base', methods=['POST', 'GET'])
 def sinta_author_base():
     if request.method == "POST":
-        username = request.form['username']
-        password = request.form['password']
-        id_sinta = request.form['id_sinta']
-        return redirect(url_for('sinta_author_extract', uname=username, pw=password, ids=id_sinta))
+        # username = request.form['username']
+        # password = request.form['password']
+        # id_sinta = request.form['id_sinta']
+        uname = os.getenv("USERNAME_SINTA")
+        pw = os.getenv("PASSWORD_SINTA")
+        ids = os.getenv("ID_PROFILE_SINTA")
+        return redirect(url_for('sinta_author_extract', uname=uname, pw=pw, ids=ids))
     else:
-        return render_template('sinta.html')
+        return render_template('index.html')
 
 @app.route('/sinta_author_extract/<uname>/<pw>/<ids>')
 def sinta_author_extract(uname=None, pw=None, ids=None):
-    print(uname)
-    print(pw)
-    print(ids)
-    # total_data, df = sinta_author(uname, pw, ids)
-    total_data, df = sinta_author()
+    # print(uname)
+    # print(pw)
+    # print(ids)
+    # # total_data, df = sinta_author(uname, pw, ids)
+    # total_data, df = sinta_author()
+    # print(total_data)
+
+    sinta_author_data = SintaAuthor(uname, pw, ids)
+    # sinta_author_data.sinta_login()
+    total_data, df = sinta_author_data.sinta_bs("scopus")
     print(total_data)
+
     return send_file(
                 BytesIO(df.to_csv(index=False, encoding='utf-8').encode()),
                 as_attachment=True,
                 download_name=f'data_crawling_sinta_author_{today}',
-                mimetype='text/excel')
+                mimetype='text/csv')
 
 if __name__ == "__main__":
     app.run(debug=True)
