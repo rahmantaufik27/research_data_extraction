@@ -9,10 +9,9 @@ from datetime import date
 from bs4 import BeautifulSoup
 import requests
 from fake_useragent import UserAgent
-from webdriver_manager.chrome import ChromeDriverManager
+# from webdriver_manager.chrome import ChromeDriverManager
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -21,14 +20,14 @@ from preprocessing import Preprocessing
 
 today = date.today()
 
+# INITIATE AND CALL THE BROWSER FOR SCRAPING
 def webdriver_config():
-    # initiate and call the browser for scraping
-    # set the header
+    # SET THE HEADER
     # ua = UserAgent(verify_ssl=False)
     ua = UserAgent()
     userAgent = ua.random
     header = {'User-Agent': userAgent}
-    # set the browser option 
+    # SET THE BROWSER OPTION 
     chrome_options = Options()
     chrome_options.add_argument("--headless") # comment this line to see the browser running
     chrome_options.add_argument("--incognito")
@@ -42,16 +41,17 @@ def webdriver_config():
     return chrome_options
 
 def lppmunila_year():
-    # create list year for url
+    # CREATE LIST YEAR FOR URL
+    # some years setting manually
     list_year = ['3276', '3018', '2107', '1985', '1977', '1010', '0223', '0220', '0214', '0207', '0202', '0201', '0200', '0029', '0028', '0022', '0021', '0020', '0017', '0016', '0015']
     for i in range(1990, 2025):
         list_year.append(str(i))
     list_year = sorted(list_year, reverse=True)
     # print(len(list_year))
-    # urls = ['http://repository.lppm.unila.ac.id/cgi/exportview/year/2023/JSON/2023.js', 'http://repository.lppm.unila.ac.id/cgi/exportview/year/1990/JSON/1990.js']
+    # urls = ['http://repository.lppm.unila.ac.id/cgi/exportview/year/2023/JSON/2023.js', 'http://repository.lppm.unila.ac.id/cgi/exportview/year/1990/JSON/1990.js'] # for testing
     urls = list_year
 
-    # collect data from each url
+    # COLLECT DATA FROM EACH YEAR'S URL
     df = pd.DataFrame()
     for idx, url in enumerate(urls):
         url = f'http://repository.lppm.unila.ac.id/cgi/exportview/year/{url}/JSON/{url}.js'
@@ -62,7 +62,7 @@ def lppmunila_year():
         print(f"data {idx}: {len(data)}")
         df = pd.concat([df, data], ignore_index = True, axis = 0)
 
-    # clean data collection and convert into csv
+    # CLEAN DATA COLLECTION AND CONVERT INTO CSV
     columns = ['divisions', 'title', 'abstract', 'subjects', 'publication']
     pre_processing = Preprocessing()
     df[columns] = df[columns].replace(np.nan, '', regex=True)
@@ -71,12 +71,13 @@ def lppmunila_year():
     df[columns].to_csv(f"data/data_crawling_lppmunila_year_{today}.csv")
 
 def gscholar_idauthor():
+    # SETUP THE CHROME FROM THE FUNCTION
     chrome_options = webdriver_config() 
     driver = webdriver.Chrome(options=chrome_options)
     
-    # access article link from authors
-    # list_idgs = ['sXyP1GYAAAAJ', 'SdfFZQYAAAAJ', 'x3ceWPkAAAAJ']
-    list_idgs = ['sXyP1GYAAAAJ']
+    # ACCESS ARTICLE LINK FROM AUTHORS
+    # list_idgs = ['sXyP1GYAAAAJ', 'SdfFZQYAAAAJ', 'x3ceWPkAAAAJ'] # manual list
+    list_idgs = ['sXyP1GYAAAAJ'] # manual list
     articles = []
     for idgs in list_idgs:
         url_author = f"https://scholar.google.com/citations?user={idgs}"
@@ -102,8 +103,8 @@ def gscholar_idauthor():
             url_articles.append(link_article)
         print("Total articles: ", len(url_articles))
 
-        # crawling information from each article link into dictionary, list, and json later
-        df = pd.DataFrame()
+        # CRAWLING INFORMATION FROM EACH ARTICLE LINK INTO DICTIONARY, LIST, AND A FILE LATER
+        # df = pd.DataFrame()
         for idx, url in enumerate(url_articles):
             # print(f"{idx}. {url}")
             dict = {}
@@ -141,81 +142,23 @@ def gscholar_idauthor():
     with open(f"data/data_crawling_gscholar_idauthor_{today}.json", "w") as outfile:
         outfile.write(json_articles)
 
-def gscholar_idauthor_telegrambot():
-    header = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0'} 
-    
-    idgs = 'sXyP1GYAAAAJ'
-    url_author = f"https://scholar.google.com/citations?user={idgs}"
-    response = requests.get(url_author, headers=header)
-    soup = BeautifulSoup(response.content, 'lxml')
-    url_articles = []
-    for a in soup.find_all('a', class_="gsc_a_at"):
-        link_article = f"https://scholar.google.com/{a['href']}"
-        # print(link_article)
-        url_articles.append(link_article)
-    print("Total articles: ", len(url_articles))
-
-    # crawling information from each article link into dictionary, list, and json later
-    articles = []
-    df = pd.DataFrame()
-    for idx, url in enumerate(url_articles):
-        # print(f"{idx}. {url}")
-        dict = {}
-
-        # obtain id author's google scholar 
-        dict["idgs"] = idgs
-
-        # obtain title
-        response = requests.get(url, headers=header)
-        soup = BeautifulSoup(response.content, 'lxml')
-        title = soup.find("div",{"id":"gsc_oci_title"}).get_text()
-        dict["title"] = title
-        
-        # obtain other informations
-        fields = []
-        for val in soup.findAll('div', attrs={'class':'gsc_oci_field'}):
-            fields.append(val.text)
-        values = []
-        for val in soup.findAll('div', attrs={'class':'gsc_oci_value'}):
-            values.append(val.text)
-
-        for key in fields:
-            for value in values:
-                dict[key] = value
-                values.remove(value)
-                break
-        
-        articles.append(dict)
-        # print(str(dict))
-
-    json_articles = json.dumps(articles, indent=4)
-    # print(json_articles)
-
-    # convert to json
-    with open(f"data/data_crawling_gscholar_idauthor_{today}.json", "w") as outfile:
-        outfile.write(json_articles)
-
 def sinta_univ():
-    load_dotenv()
+    # SETUP THE CHROME FROM THE FUNCTION
+    chrome_options = webdriver_config() 
+    driver = webdriver.Chrome(options=chrome_options)
+    driver.get("https://sinta.kemdikbud.go.id/logins")
 
+    # LOGIN
+    load_dotenv()
     USERNAME_SINTA = os.getenv("USERNAME_SINTA")
     PASSWORD_SINTA = os.getenv("PASSWORD_SINTA")
     ID_AFF_PROFIL = os.getenv("ID_AFF_SINTA")
-
-    chrome_options = webdriver_config() 
-    driver = webdriver.Chrome(options=chrome_options)
-
-    driver.get("https://sinta.kemdikbud.go.id/logins")
-
     username = driver.find_element(By.NAME, "username")
     username.send_keys(USERNAME_SINTA)
-
     password = driver.find_element(By.NAME, "password")
     password.send_keys(PASSWORD_SINTA)
-
     submit = driver.find_element(By.XPATH, "//button[@type='submit']")
     submit.click()
-
     driver.implicitly_wait(30)
 
     title = []
@@ -223,13 +166,13 @@ def sinta_univ():
     year = []
     creator = []
 
-    # get page total
+    # GET THE PAGE TOTAL
     driver.get(f"https://sinta.kemdikbud.go.id/affiliations/profile/{ID_AFF_PROFIL}?page=1&view=scopus")
     page_total = driver.find_element(By.XPATH, "//div[@class='profile-article']//nav[@aria-label='pagination-sample']//div[@class='text-center pagination-text']//small").text
     page_total = page_total.split()[3]
     page_total = page_total.replace('.', '')
 
-    # get all informations for each pages
+    # GET ALL INFORMATIONS FOR EACH PAGES
     for page in range(1, 3):
         driver.get(f"https://sinta.kemdikbud.go.id/affiliations/profile/{ID_AFF_PROFIL}?page={page}&view=scopus")
         articles = driver.find_elements(By.CLASS_NAME, "ar-list-item")
@@ -245,9 +188,9 @@ def sinta_univ():
     df['creator'] = df["creator"].str.split(": ", expand=True)[1]
     df.to_csv(f"data/data_crawling_sinta_univ_{today}.csv")
 
-class SintaAuthor:
+class SintaExtract:
 
-    # set the list
+    # SET THE LIST
     title = []
     pub = []
     year = []
@@ -275,21 +218,21 @@ class SintaAuthor:
         WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.XPATH, "//button[@type='submit']"))).click()
         return driver
 
-    def sinta_bs(self, pub_type):
-        # access the driver web chrome first and login
+    def sinta_author(self, pub_type):
+        # ACCESS THE DRIVER WEB CHROME FIRST AND LOGIN
         driver = self.sinta_login()
-        # access the scopus profile web 
+        # ACCESS THE SCOPUS PROFILE WEB 
         url = f"https://sinta.kemdikbud.go.id/authors/profile/{self.ids}/?view={pub_type}"
         driver.get(url)
 
-        # get page total
+        # GET THE PAGE TOTAL
         page_total = driver.find_element(By.XPATH, "//div[@class='profile-article']//nav[@aria-label='pagination-sample']//div[@class='text-center pagination-text']//small").text
         page_total = page_total.split()[3]
         page_total = page_total.replace('.', '')
         page_total = int(page_total)+1
         print(pub_type+": "+str(page_total))
 
-        # get all informations for each pages
+        # GET ALL INFORMATIONS FOR EACH PAGES
         for page in range(1, page_total):
             full_url = f"https://sinta.kemdikbud.go.id/authors/profile/{self.ids}/?page={page}&view={pub_type}"
             print(full_url)
@@ -298,12 +241,6 @@ class SintaAuthor:
             time.sleep(5)
 
             soup = BeautifulSoup(driver.page_source, "lxml")
-
-            # title = [titles.find("a").text for titles in soup.find_all("div", class_="ar-title")]
-            # pub = [pubs.text for pubs in soup.find_all("a", class_="ar-pub")]
-            # quartile = [quartiles.text for quartiles in soup.find_all("a", class_="ar-quartile")]
-            # year = [years.text for years in soup.find_all("a", class_="ar-year")]
-            # cited = [citeds.text for citeds in soup.find_all("a", class_="ar-cited")]
 
             titles = soup.find_all("div", class_="ar-title")
             for title in titles:
@@ -320,252 +257,41 @@ class SintaAuthor:
             citations = soup.find_all("a", class_="ar-cited")
             for cited in citations:
                 self.cited.append(cited.text)
-            creators = soup.find_all("div", class_="ar-meta")
-            print(len(creators))
-            for creator in creators:
-                crs = creator.select('a:-soup-contains("Creator")')
-                # creator.find_all("a")
-                # crs = [cr.text for cr in creator.find_all("a")]
-                print(crs)
-            #     self.cited.append(creator[3].text)
+            creators = soup.find_all('div', class_='ar-meta')
+            for cr in creators:
+                for a_tag in cr.find_all('a'):
+                    if "Creator" in a_tag.text:
+                        self.creator.append(a_tag.text)
 
-        # df = pd.DataFrame(data={'title': title, 'publication': pub, 'quartile / sinta': quartile, 'year': year, 'creator': creator, 'cited': cited})
-        df = pd.DataFrame(data={'title': self.title, 'publication': self.pub, 'quartile / sinta': self.quartile, 'year': self.year, 'cited': self.cited})
+        df = pd.DataFrame(data={'title': self.title, 'publication': self.pub, 'quartile / sinta': self.quartile, 'year': self.year, 'author': self.creator, 'cited': self.cited})
         df['pub_type'] = pub_type
-        # df['author'] = df["author"].str.replace("Creator : ", "")
+        df['author'] = df["author"].str.replace("Creator : ", "")
         print(df)
-        # df['author'] = df["author"].str.replace("Authors : ", "")
 
         return len(df), df
-
-    def sinta_sel(self, view):
-        # access the driver web chrome first and login
+    
+    def sinta_univ(self):
+        # ACCESS THE DRIVER WEB CHROME FIRST AND LOGIN
         driver = self.sinta_login()
-        # access the scopus profile web 
-        url = f"https://sinta.kemdikbud.go.id/authors/profile/{self.ids}/?view={view}"
-        driver.get(url)
 
-        # get page total
+        # GET THE PAGE TOTAL
+        driver.get(f"https://sinta.kemdikbud.go.id/affiliations/profile/{self.ids}?page=1&view=scopus")
         page_total = driver.find_element(By.XPATH, "//div[@class='profile-article']//nav[@aria-label='pagination-sample']//div[@class='text-center pagination-text']//small").text
         page_total = page_total.split()[3]
         page_total = page_total.replace('.', '')
-        page_total = int(page_total)+1
-        print(view+": "+str(page_total))
 
-        # get all informations for each pages
-        for page in range(1, page_total):
-            full_url = f"https://sinta.kemdikbud.go.id/authors/profile/{self.ids}/?page={page}&view={view}"
-            print(full_url)
-            driver.get(full_url)
-            driver.implicitly_wait(60)
-            time.sleep(5)
-
-            # page = requests.get(full_url)
-            # soup = BeautifulSoup(page.content, "html.parser")
-            # titles = soup.find_all("div", class_="ar-title")
-            # print(len(titles))
-            # for title in titles:
-            #     title_element = title.find("a").text
-            #     print(title_element)
-            # time.sleep(5)
-
+        # GET ALL INFORMATIONS FOR EACH PAGES
+        for page in range(1, 3):
+            driver.get(f"https://sinta.kemdikbud.go.id/affiliations/profile/{self.ids}?page={page}&view=scopus")
             articles = driver.find_elements(By.CLASS_NAME, "ar-list-item")
-            
+
             for article in articles:
                 self.title.append(article.find_element(By.CLASS_NAME, "ar-title").text)
-                # print(article.find_element(By.CLASS_NAME, "ar-title").text)
-                # pub.append(article.find_element(By.CLASS_NAME, "ar-pub").text)
-                # quartile.append(article.find_element(By.CLASS_NAME, "ar-quartile").text)
-                # year.append(article.find_element(By.CLASS_NAME, "ar-year").text)
-                # cited.append(article.find_element(By.CLASS_NAME, "ar-cited").text)
-                # armeta = article.find_elements(By.CSS_SELECTOR, ".ar-meta [href]")
-                # creator.append(armeta[3].text)
-                # pub_type.append(view)
-    
-    def transform_dataframe(self):
-        return self.title
+                self.pub.append(article.find_element(By.CLASS_NAME, "ar-pub").text)
+                self.year.append(article.find_element(By.CLASS_NAME, "ar-year").text)
+                armeta = article.find_elements(By.CSS_SELECTOR, ".ar-meta [href]")
+                self.creator.append(armeta[2].text)
 
-
-
-def sinta_author():
-    load_dotenv()
-
-    USERNAME_SINTA = os.getenv("USERNAME_SINTA")
-    PASSWORD_SINTA = os.getenv("PASSWORD_SINTA")
-
-    chrome_options = webdriver_config() 
-
-    ID_PROFIL = os.getenv("ID_PROFILE_SINTA")
-    url = f"https://sinta.kemdikbud.go.id/authors/profile/{ID_PROFIL}"
-
-    # set config
-    driver = webdriver.Chrome(options=chrome_options)
-
-    # login first to sinta
-    driver.get("https://sinta.kemdikbud.go.id/logins")
-    username = driver.find_element(By.NAME, "username")
-    username.send_keys(USERNAME_SINTA)
-    password = driver.find_element(By.NAME, "password")
-    password.send_keys(PASSWORD_SINTA)
-    WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//button[@type='submit']"))).click()
-    # time.sleep(5)
-
-    # set the list
-    title = []
-    pub = []
-    year = []
-    quartile = []
-    cited = []
-    creator = []
-    pub_type = []
-
-    # access the author url, specifically for the scopus
-    view = "scopus"
-    driver.get(url+"?view="+view)
-    # driver.implicitly_wait(60)
-    # time.sleep(5)
-
-    # get page total
-    page_total = driver.find_element(By.XPATH, "//div[@class='profile-article']//nav[@aria-label='pagination-sample']//div[@class='text-center pagination-text']//small").text
-    page_total = page_total.split()[3]
-    page_total = page_total.replace('.', '')
-    page_total = int(page_total)+1
-    print(view+": "+str(page_total))
-
-    # get all informations for each pages
-    for page in range(1, page_total):
-        full_url = f"{url}/?page={page}&view={view}"
-        print(full_url)
-        driver.get(full_url)
-        # driver.implicitly_wait(60)
-        # time.sleep(5)
-
-        # page = requests.get(full_url)
-        # soup = BeautifulSoup(page.content, "html.parser")
-        # titles = soup.find_all("div", class_="ar-title")
-        # print(len(titles))
-        # for title in titles:
-        #     title_element = title.find("a").text
-        #     print(title_element)
-        # time.sleep(5)
-
-        articles = driver.find_elements(By.CLASS_NAME, "ar-list-item")
-        
-        for article in articles:
-            title.append(article.find_element(By.CLASS_NAME, "ar-title").text)
-            # print(article.find_element(By.CLASS_NAME, "ar-title").text)
-            pub.append(article.find_element(By.CLASS_NAME, "ar-pub").text)
-            quartile.append(article.find_element(By.CLASS_NAME, "ar-quartile").text)
-            year.append(article.find_element(By.CLASS_NAME, "ar-year").text)
-            cited.append(article.find_element(By.CLASS_NAME, "ar-cited").text)
-            armeta = article.find_elements(By.CSS_SELECTOR, ".ar-meta [href]")
-            creator.append(armeta[3].text)
-            pub_type.append(view)
-
-    # access the author url, specifically for the web of science
-    view = "wos"
-    driver.get(url+"?view="+view)
-    # driver.implicitly_wait(60)
-    # time.sleep(5)
-
-    # get page total
-    page_total = driver.find_element(By.XPATH, "//div[@class='profile-article']//nav[@aria-label='pagination-sample']//div[@class='text-center pagination-text']//small").text
-    page_total = page_total.split()[3]
-    page_total = page_total.replace('.', '')
-    page_total = int(page_total)+1
-    print(view+": "+str(page_total))
-
-    # get all informations for each pages
-    for page in range(1, page_total):
-        full_url = f"{url}/?page={page}&view={view}"
-        print(full_url)
-        driver.get(full_url)
-        # driver.implicitly_wait(60)
-        # time.sleep(5)
-
-        articles = driver.find_elements(By.CLASS_NAME, "ar-list-item")
-
-        for article in articles:
-            title.append(article.find_element(By.CLASS_NAME, "ar-title").text)
-            pub.append(article.find_element(By.CLASS_NAME, "ar-pub").text)
-            quartile.append(article.find_element(By.CLASS_NAME, "ar-quartile").text)
-            year.append(article.find_element(By.CLASS_NAME, "ar-year").text)
-            cited.append(article.find_element(By.CLASS_NAME, "ar-cited").text)
-            armeta = article.find_elements(By.CSS_SELECTOR, ".ar-meta [href]")
-            creator.append(armeta[3].text)
-            pub_type.append(view)
-
-    # access the author url, specifically for the garuda
-    view = "garuda"
-    driver.get(url+"?view="+view)
-    # driver.implicitly_wait(60)
-    # time.sleep(5)
-
-    # get page total
-    page_total = driver.find_element(By.XPATH, "//div[@class='profile-article']//nav[@aria-label='pagination-sample']//div[@class='text-center pagination-text']//small").text
-    page_total = page_total.split()[3]
-    page_total = page_total.replace('.', '')
-    page_total = int(page_total)+1
-    print(view+": "+str(page_total))
-
-    # get all informations for each pages
-    for page in range(1, page_total):
-        full_url = f"{url}/?page={page}&view={view}"
-        print(full_url)
-        driver.get(full_url)
-        # driver.implicitly_wait(60)
-        # time.sleep(5)
-
-        articles = driver.find_elements(By.CLASS_NAME, "ar-list-item")
-
-        for article in articles:
-            title.append(article.find_element(By.CLASS_NAME, "ar-title").text)
-            pub.append(article.find_element(By.CLASS_NAME, "ar-pub").text)
-            quartile.append(article.find_element(By.CLASS_NAME, "ar-quartile").text)
-            year.append(article.find_element(By.CLASS_NAME, "ar-year").text)
-            cited.append(article.find_element(By.CLASS_NAME, "ar-cited").text)
-            armeta = article.find_elements(By.CSS_SELECTOR, ".ar-meta [href]")
-            creator.append(armeta[3].text)
-            pub_type.append(view)
-
-    # access the author url, specifically for the google scholar
-    view = "googlescholar"
-    driver.get(url+"?view="+view)
-    # driver.implicitly_wait(60)
-    # time.sleep(5)
-
-    # get page total
-    page_total = driver.find_element(By.XPATH, "//div[@class='profile-article']//nav[@aria-label='pagination-sample']//div[@class='text-center pagination-text']//small").text
-    page_total = page_total.split()[3]
-    page_total = page_total.replace('.', '')
-    page_total = int(page_total)+1
-    print(view+": "+str(page_total))
-
-    # get all informations for each pages
-    for page in range(1, page_total):
-        full_url = f"{url}/?page={page}&view={view}"
-        print(full_url)
-        driver.get(full_url)
-        # driver.implicitly_wait(60)
-        # time.sleep(5)
-        
-        articles = driver.find_elements(By.CLASS_NAME, "ar-list-item")
-
-        for article in articles:
-            title.append(article.find_element(By.CLASS_NAME, "ar-title").text)
-            pub.append(article.find_element(By.CLASS_NAME, "ar-pub").text)
-            quartile.append("")
-            year.append(article.find_element(By.CLASS_NAME, "ar-year").text)
-            cited.append(article.find_element(By.CLASS_NAME, "ar-cited").text)
-            armeta = article.find_elements(By.CSS_SELECTOR, ".ar-meta [href]")
-            creator.append(armeta[0].text)
-            pub_type.append(view)
-
-    df = pd.DataFrame(data={'title': title, 'publication': pub, 'quartile / sinta': quartile, 'year': year, 'cited': cited, 'author': creator, 'type': pub_type})
-    df['author'] = df["author"].str.replace("Creator : ", "")
-    df['author'] = df["author"].str.replace("Authors : ", "")
-
-    # df.to_excel(f"data/data_crawling_sinta_author_{today}.xlsx", index=False)
-
-    return len(df), df
-
+        df = pd.DataFrame(data={'title': title, 'pub': pub, 'year': year, 'creator': creator})
+        df['creator'] = df["creator"].str.split(": ", expand=True)[1]
+        df.to_csv(f"data/data_crawling_sinta_univ_{today}.csv")

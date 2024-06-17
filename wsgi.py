@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, url_for, flash, redirect, send_file
-from extract import lppmunila_year, gscholar_idauthor, sinta_univ, sinta_author, SintaAuthor
+from extract import lppmunila_year, gscholar_idauthor, sinta_univ, sinta_author, SintaExtract
 from datetime import date
 from io import BytesIO
 import pandas as pd
@@ -30,25 +30,16 @@ def extract_sinta_univ():
 
 @app.route('/sinta_author2')
 def sinta_author2():
-    # uname = os.getenv("USERNAME_SINTA")
-    # pw = os.getenv("PASSWORD_SINTA")
-    # ids = os.getenv("ID_PROFILE_SINTA")
-    # # url = "https://sinta.kemdikbud.go.id"
-    # sinta_author_data = SintaAuthor(uname, pw, ids)
-    # # sinta_author_data.sinta_login()
-    # sinta_author_data.sinta_bs("scopus")
-    # # sinta_author_data.sinta_bs(2, "scopus")
-    # # sinta_author_data.sinta_sel("scopus")
-    # # print(sinta_author_data.transform_dataframe())
     return render_template('sinta_author.html')
 
 @app.route('/sinta_author_base', methods=['POST', 'GET'])
 def sinta_author_base():
     if request.method == "POST":
+        # GET DATA FROM THE FORM
         # username = request.form['username']
         # password = request.form['password']
         # id_sinta = request.form['id_sinta']
-        uname = os.getenv("USERNAME_SINTA")
+        uname = os.getenv("USERNAME_SINTA") # login manually using default uname, pw, ids 
         pw = os.getenv("PASSWORD_SINTA")
         ids = os.getenv("ID_PROFILE_SINTA")
         return redirect(url_for('sinta_author_extract', uname=uname, pw=pw, ids=ids))
@@ -57,18 +48,13 @@ def sinta_author_base():
 
 @app.route('/sinta_author_extract/<uname>/<pw>/<ids>')
 def sinta_author_extract(uname=None, pw=None, ids=None):
-    # print(uname)
-    # print(pw)
-    # print(ids)
-    # # total_data, df = sinta_author(uname, pw, ids)
-    # total_data, df = sinta_author()
-    # print(total_data)
-
-    sinta_author_data = SintaAuthor(uname, pw, ids)
-    # sinta_author_data.sinta_login()
-    total_data, df = sinta_author_data.sinta_bs("scopus")
+    # EXTRACT DATA SINTA START FROM THE LOGIN
+    sinta_author_data = SintaExtract(uname, pw, ids)
+    # EXTRACT DATA PER SINTA TYPE
+    total_data, df = sinta_author_data.sinta_author("scopus")
     print(total_data)
 
+    # RETURN AS A FILE
     return send_file(
                 BytesIO(df.to_csv(index=False, encoding='utf-8').encode()),
                 as_attachment=True,
