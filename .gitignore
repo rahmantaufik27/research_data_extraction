@@ -1,8 +1,10 @@
 .env
 /env
 /__pycache__
-**/__pycache__/
+**/__pycache__
 *.csv
 *.pyc
 /data
 *.DS_Store
+**/.DS_Store
+**/data

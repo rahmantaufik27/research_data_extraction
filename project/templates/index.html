@@ -35,7 +35,7 @@
                     <div class="m-4 m-lg-5">
                         <h1 class="display-5 fw-bold">Extract Your Publication Here!</h1>
                         <p class="fs-4">Situs web aplikasi ini dapat digunakan untuk mengekstrak data publikasi dari Google Scholar, SINTA, dan LPPM Unila menggunakan metode web scraping.</p>
-                        <a class="btn btn-primary btn-lg" href="{{url_for('sinta_author_base')}}">Let's Try</a>
+                        <a class="btn btn-primary btn-lg" href="{{url_for('try_load')}}">Let's Try</a>
                     </div>
                 </div>
             </div>
@@ -47,7 +47,7 @@
                 <div class="row gx-lg-5">
                     <div class="col-lg-6 col-xxl-4 mb-5">
                         <div class="card bg-light border-0 h-100">
-                            <a href="{{url_for('sinta_author2')}}" class="text-decoration-none text-reset">
+                            <a href="{{url_for('sinta_author_pub_extract')}}" class="text-decoration-none text-reset">
                             <div class="card-body text-center p-4 p-lg-5 pt-0 pt-lg-0">
                                 <div class="feature bg-primary bg-gradient text-white rounded-3 mb-4 mt-n4"><i class="bi bi-eye"></i></div>
                                 <h2 class="fs-4 fw-bold">Sinta</h2>
@@ -58,11 +58,13 @@
                     </div>
                     <div class="col-lg-6 col-xxl-4 mb-5">
                         <div class="card bg-light border-0 h-100">
+                            <a href="{{url_for('extract_lppmunila_year')}}" class="text-decoration-none text-reset">
                             <div class="card-body text-center p-4 p-lg-5 pt-0 pt-lg-0">
                                 <div class="feature bg-primary bg-gradient text-white rounded-3 mb-4 mt-n4"><i class="bi bi-eye"></i></div>
                                 <h2 class="fs-4 fw-bold">LPPM Unila</h2>
                                 <p class="mb-0">LPPM Unila (Lembaga Penelitian dan Pengabdian Masyarakat Universitas Lampung) menyimpan data khusus terkait publikasi penelitian universitas.</p>
                             </div>
+                            </a>
                         </div>
                     </div>
                     <div class="col-lg-6 col-xxl-4 mb-5">
