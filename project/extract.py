@@ -271,7 +271,7 @@ class SintaExtract:
             page_total = page_total.split()[3]
             page_total = page_total.replace('.', '')
             page_total = int(page_total)+1
-            print(pub_type+": "+str(page_total)+" pages")
+            print(pub_type+": "+str(page_total-1)+" pages")
 
             # GET ALL INFORMATIONS FOR EACH PAGES
             for page in range(1, page_total):
@@ -303,18 +303,22 @@ class SintaExtract:
                     self.year.append(year.text)
                 
                 articles = driver.find_elements(By.CLASS_NAME, "ar-list-item")
+
                 for article in articles:
-                    quartile = quartile.append(article.find_element(By.CLASS_NAME, "ar-quartile").text)
-                    print(quartile[0].text)
+                    personil = []
+                    quartile = article.find_elements(By.CLASS_NAME, "ar-quartile")
+                    # print("fund:", quartile[0].text)
                     self.fund.append(quartile[0].text)
 
                     armeta = article.find_elements(By.CSS_SELECTOR, ".ar-meta [href]")
-                    print(armeta[0].text)
-                    self.creator.append(armeta[0].text)
-
-                    armeta = article.find_elements(By.CSS_SELECTOR, ".ar-meta [href]")
-                    print(armeta[3].text)
-                    self.creator.append(armeta[3].text)
+                    for link in armeta:
+                        href = link.get_attribute('href')
+                        text = link.text
+                        if 'view' not in href:
+                            personil.append(text)
+                    full_creator = armeta[0].text + "; Anggota: " + ', '.join(personil)
+                    # print(full_creator)
+                    self.creator.append(full_creator)
 
             pre_processing = Preprocessing()
             df = pd.DataFrame.from_dict(data={'title': self.title, 'publication': self.pub, 'year': self.year, 'author': self.creator, 'fund': self.fund, 'uri': self.uri, 'type': self.pub_type, 'id_sinta': self.id_sinta}, orient='index').transpose()
@@ -323,7 +327,7 @@ class SintaExtract:
 
             return df
         except:
-            print(f"publikasi {pub_type} tidak ditemukan")
+            print(f"{pub_type} tidak ditemukan")
             df = pd.DataFrame(columns=['title', 'publication', 'year', 'author', 'fund', 'uri', 'type', 'id_sinta'])
             return df
     
