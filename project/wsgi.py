@@ -52,19 +52,6 @@ def sinta_author_extract(uname=None, pw=None, ids=None):
     sinta_author_data = SintaExtract(uname, pw, ids)
     # EXTRACT DATA PER SINTA TYPE
 
-    df = sinta_author_data.sinta_author("garuda")
-    print("garuda", len(df))
-    # df1 = sinta_author_data.sinta_author("scopus")
-    # print("scopus", len(df1))
-    # df2 = sinta_author_data.sinta_author("wos")
-    # print("wos", len(df2))
-    # df3 = sinta_author_data.sinta_author("garuda")
-    # print("wos", len(df3))
-    # df4 = sinta_author_data.sinta_author("googlescholar")
-    # print("scopus", len(df4))
-    # df = pd.concat([df1, df2, df3, df4], ignore_index=True)
-    # print("all", len(df))
-
     output = BytesIO()
     with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
         df.to_excel(writer, index=False, sheet_name="Sheet1")
@@ -75,19 +62,42 @@ def sinta_author_extract(uname=None, pw=None, ids=None):
 def sinta_author_pub_extract():
     uname = os.getenv("USERNAME_SINTA") # login manually using default uname, pw, ids 
     pw = os.getenv("PASSWORD_SINTA")
-    ids = ['5980605', '6155915']
+    ids = ['6680581', '6680844', '6023686', '5980587', '6657292', '6680511', '6729923', '6155915', '6021756', '6156734', '6808429', '6023917', '6156872', '5980605', '6140651', '6680562', '6081289', '6156743', '6156833', '6125066', '6717407', '6704618', '6705331', '6813851', '6808368', '6800649', '6842107', '6158846']
+    # ids = ['6680581', '6680844']
     pub_type = ['scopus', 'wos', 'garuda', 'googlescholar']
     df = pd.DataFrame()
     for i in ids:
+        print(i)
         sinta_author_data = SintaExtract(uname, pw, i)
         for t in pub_type:
-            df = sinta_author_data.sinta_author(t)
+            df = sinta_author_data.sinta_author_pub(t)
     
     output = BytesIO()
     with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
         df.to_excel(writer, index=False, sheet_name="Sheet1")
     output.seek(0)
     return send_file(output, download_name=f"data_crawling_sinta_author_pub_{today}.xlsx", as_attachment=True)
+    
+@app.route('/sinta_author_research_extract')
+def sinta_author_research_extract():
+    uname = os.getenv("USERNAME_SINTA") # login manually using default uname, pw, ids 
+    pw = os.getenv("PASSWORD_SINTA")
+    # ids = ['6680581', '6680844', '6023686', '5980587', '6657292', '6680511', '6729923', '6155915', '6021756', '6156734', '6808429', '6023917', '6156872', '5980605', '6140651', '6680562', '6081289', '6156743', '6156833', '6125066', '6717407', '6704618', '6705331', '6813851', '6808368', '6800649', '6842107', '6158846']
+    ids = ['5980605', '6680581', '6680844']
+    # pub_type = ['researches', 'services', 'iprs', 'books']
+    pub_type = ['researches', 'services']
+    df = pd.DataFrame()
+    for i in ids:
+        print(i)
+        sinta_author_data = SintaExtract(uname, pw, i)
+        for t in pub_type:
+            df = sinta_author_data.sinta_author_research(t)
+    
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
+        df.to_excel(writer, index=False, sheet_name="Sheet1")
+    output.seek(0)
+    return send_file(output, download_name=f"data_crawling_sinta_author_research_{today}.xlsx", as_attachment=True)
 
 if __name__ == "__main__":
     app.run(debug=True)

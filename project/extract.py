@@ -158,6 +158,7 @@ class SintaExtract:
     url = []
     id_sinta = []
     uri = []
+    fund = []
 
     def __init__(self, uname, pw, ids):
         self.uname = uname
@@ -178,79 +179,153 @@ class SintaExtract:
         WebDriverWait(driver, 60).until(EC.element_to_be_clickable((By.XPATH, "//button[@type='submit']"))).click()
         return driver
 
-    def sinta_author(self, pub_type):
+    def sinta_author_pub(self, pub_type):
         # ACCESS THE DRIVER WEB CHROME FIRST AND LOGIN
         driver = self.sinta_login()
         # ACCESS THE SCOPUS PROFILE WEB 
         url = f"https://sinta.kemdikbud.go.id/authors/profile/{self.ids}/?view={pub_type}"
         driver.get(url)
-        print(self.ids)
 
-        # GET THE PAGE TOTAL
-        page_total = driver.find_element(By.XPATH, "//div[@class='profile-article']//nav[@aria-label='pagination-sample']//div[@class='text-center pagination-text']//small").text
-        page_total = page_total.split()[3]
-        page_total = page_total.replace('.', '')
-        page_total = int(page_total)+1
-        print(pub_type+": "+str(page_total))
+        try:
+            # GET THE PAGE TOTAL
+            page_total = driver.find_element(By.XPATH, "//div[@class='profile-article']//nav[@aria-label='pagination-sample']//div[@class='text-center pagination-text']//small").text
+            page_total = page_total.split()[3]
+            page_total = page_total.replace('.', '')
+            page_total = int(page_total)+1
+            print(pub_type+": "+str(page_total)+" pages")
 
-        # GET ALL INFORMATIONS FOR EACH PAGES
-        for page in range(1, page_total):
-            full_url = f"https://sinta.kemdikbud.go.id/authors/profile/{self.ids}/?page={page}&view={pub_type}"
-            # print(full_url)
-            driver.get(full_url)
-            driver.implicitly_wait(60)
-            time.sleep(5)
+            # GET ALL INFORMATIONS FOR EACH PAGES
+            for page in range(1, page_total):
+                full_url = f"https://sinta.kemdikbud.go.id/authors/profile/{self.ids}/?page={page}&view={pub_type}"
+                # print(full_url)
+                driver.get(full_url)
+                driver.implicitly_wait(60)
+                time.sleep(5)
 
-            soup = BeautifulSoup(driver.page_source, "lxml")
+                soup = BeautifulSoup(driver.page_source, "lxml")
 
-            titles = soup.find_all("div", class_="ar-title")
-            for title in titles:
-                # print(title.find("a").text)
-                # print(title.find("a")['href'])
-                self.title.append(title.find("a").text)
-                self.url.append(title.find("a")['href'])
-                self.id_sinta.append(self.ids)
-                self.pub_type.append(pub_type)
-                self.uri.append(full_url)
-            pubs = soup.find_all("a", class_="ar-pub")
-            for pub in pubs:
-                if "WOS.ESCI Edition" not in pub.text:
+                titles = soup.find_all("div", class_="ar-title")
+                for title in titles:
+                    # print(title.find("a").text)
+                    # print(title.find("a")['href'])
+                    self.title.append(title.find("a").text)
+                    self.url.append(title.find("a")['href'])
+                    self.id_sinta.append(self.ids)
+                    self.pub_type.append(pub_type)
+                    self.uri.append(full_url)
+
+                pubs = soup.find_all("a", class_="ar-pub")
+                for pub in pubs:
+                    if "WOS.ESCI Edition" not in pub.text:
+                        # print(pub.text)
+                        self.pub.append(pub.text)
+                quartiles = soup.find_all("a", class_="ar-quartile")
+                for quartile in quartiles:
+                    # print(quartile.text)
+                    self.quartile.append(quartile.text)
+                years = soup.find_all("a", class_="ar-year")
+                for year in years:
+                    # print(year.text)
+                    self.year.append(year.text)
+                citations = soup.find_all("a", class_="ar-cited")
+                for cited in citations:
+                    # print(cited.text)
+                    self.cited.append(cited.text)
+                
+                articles = driver.find_elements(By.CLASS_NAME, "ar-list-item")
+
+                if pub_type != "googlescholar":
+                    for article in articles:
+                        armeta = article.find_elements(By.CSS_SELECTOR, ".ar-meta [href]")
+                        # print(armeta[3].text)
+                        self.creator.append(armeta[3].text)
+                else:
+                    for article in articles:
+                        armeta = article.find_elements(By.CSS_SELECTOR, ".ar-meta [href]")
+                        # print(armeta[0].text)
+                        self.creator.append(armeta[0].text)
+
+            pre_processing = Preprocessing()
+            df = pd.DataFrame.from_dict(data={'title': self.title, 'publication': self.pub, 'quartile / sinta': self.quartile, 'year': self.year, 'author': self.creator, 'cited': self.cited, 'url': self.url, 'uri': self.uri, 'type': self.pub_type, 'id_sinta': self.id_sinta}, orient='index').transpose()
+            df['title'] = df['title'].apply(lambda x:pre_processing.clean_text(x))
+            df['title'] = df['title'].apply(lambda x:x.lstrip())
+            df['author'] = df["author"].str.replace("Creator : ", "")
+            df['author'] = df["author"].str.replace("Authors : ", "")
+
+            return df
+        except:
+            print(f"publikasi {pub_type} tidak ditemukan")
+            df = pd.DataFrame(columns=['title', 'publication', 'quartile / sinta', 'year', 'author', 'cited', 'url', 'uri', 'type', 'id_sinta'])
+            return df
+
+    def sinta_author_research(self, pub_type):
+        # ACCESS THE DRIVER WEB CHROME FIRST AND LOGIN
+        driver = self.sinta_login()
+        # ACCESS THE SCOPUS PROFILE WEB 
+        url = f"https://sinta.kemdikbud.go.id/authors/profile/{self.ids}/?view={pub_type}"
+        driver.get(url)
+
+        try:
+            # GET THE PAGE TOTAL
+            page_total = driver.find_element(By.XPATH, "//div[@class='profile-article']//nav[@aria-label='pagination-sample']//div[@class='text-center pagination-text']//small").text
+            page_total = page_total.split()[3]
+            page_total = page_total.replace('.', '')
+            page_total = int(page_total)+1
+            print(pub_type+": "+str(page_total)+" pages")
+
+            # GET ALL INFORMATIONS FOR EACH PAGES
+            for page in range(1, page_total):
+                full_url = f"https://sinta.kemdikbud.go.id/authors/profile/{self.ids}/?page={page}&view={pub_type}"
+                # print(full_url)
+                driver.get(full_url)
+                driver.implicitly_wait(60)
+                time.sleep(5)
+
+                soup = BeautifulSoup(driver.page_source, "lxml")
+
+                titles = soup.find_all("div", class_="ar-title")
+                for title in titles:
+                    # print(title.find("a").text)
+                    # print(title.find("a")['href'])
+                    self.title.append(title.find("a").text)
+                    # self.url.append(title.find("a")['href'])
+                    self.id_sinta.append(self.ids)
+                    self.pub_type.append(pub_type)
+                    self.uri.append(full_url)
+
+                pubs = soup.find_all("a", class_="ar-pub")
+                for pub in pubs:
                     # print(pub.text)
                     self.pub.append(pub.text)
-            quartiles = soup.find_all("a", class_="ar-quartile")
-            for quartile in quartiles:
-                # print(quartile.text)
-                self.quartile.append(quartile.text)
-            years = soup.find_all("a", class_="ar-year")
-            for year in years:
-                # print(year.text)
-                self.year.append(year.text)
-            citations = soup.find_all("a", class_="ar-cited")
-            for cited in citations:
-                # print(cited.text)
-                self.cited.append(cited.text)
-            
-            articles = driver.find_elements(By.CLASS_NAME, "ar-list-item")
+                years = soup.find_all("a", class_="ar-year")
+                for year in years:
+                    # print(year.text)
+                    self.year.append(year.text)
+                
+                articles = driver.find_elements(By.CLASS_NAME, "ar-list-item")
+                for article in articles:
+                    quartile = quartile.append(article.find_element(By.CLASS_NAME, "ar-quartile").text)
+                    print(quartile[0].text)
+                    self.fund.append(quartile[0].text)
 
-            if pub_type != "googlescholar":
-                for article in articles:
                     armeta = article.find_elements(By.CSS_SELECTOR, ".ar-meta [href]")
-                    # print(armeta[3].text)
-                    self.creator.append(armeta[3].text)
-            else:
-                for article in articles:
-                    armeta = article.find_elements(By.CSS_SELECTOR, ".ar-meta [href]")
-                    # print(armeta[0].text)
+                    print(armeta[0].text)
                     self.creator.append(armeta[0].text)
 
-        pre_processing = Preprocessing()
-        df = pd.DataFrame.from_dict(data={'title': self.title, 'publication': self.pub, 'quartile / sinta': self.quartile, 'year': self.year, 'author': self.creator, 'cited': self.cited, 'url': self.url, 'uri': self.uri, 'type': self.pub_type, 'id_sinta': self.id_sinta}, orient='index').transpose()
-        df['title'] = df['title'].apply(lambda x:pre_processing.clean_text(x))
-        df['title'] = df['title'].apply(lambda x:x.lstrip())
-        df['author'] = df["author"].str.replace("Creator : ", "")
-        df['author'] = df["author"].str.replace("Authors : ", "")
+                    armeta = article.find_elements(By.CSS_SELECTOR, ".ar-meta [href]")
+                    print(armeta[3].text)
+                    self.creator.append(armeta[3].text)
 
-        return df
+            pre_processing = Preprocessing()
+            df = pd.DataFrame.from_dict(data={'title': self.title, 'publication': self.pub, 'year': self.year, 'author': self.creator, 'fund': self.fund, 'uri': self.uri, 'type': self.pub_type, 'id_sinta': self.id_sinta}, orient='index').transpose()
+            df['title'] = df['title'].apply(lambda x:pre_processing.clean_text(x))
+            df['title'] = df['title'].apply(lambda x:x.lstrip())
+
+            return df
+        except:
+            print(f"publikasi {pub_type} tidak ditemukan")
+            df = pd.DataFrame(columns=['title', 'publication', 'year', 'author', 'fund', 'uri', 'type', 'id_sinta'])
+            return df
     
     def sinta_univ(self):
         # ACCESS THE DRIVER WEB CHROME FIRST AND LOGIN
@@ -274,6 +349,6 @@ class SintaExtract:
                 armeta = article.find_elements(By.CSS_SELECTOR, ".ar-meta [href]")
                 self.creator.append(armeta[2].text)
 
-        df = pd.DataFrame(data={'title': title, 'pub': pub, 'year': year, 'creator': creator})
+        df = pd.DataFrame(data={'title': self.title, 'pub': self.pub, 'year': self.year, 'creator': self.creator})
         df['creator'] = df["creator"].str.split(": ", expand=True)[1]
         df.to_csv(f"data/data_crawling_sinta_univ_{today}.csv")
