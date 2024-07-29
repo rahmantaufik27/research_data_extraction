@@ -32,24 +32,68 @@
         <!-- Header-->
         <header class="py-5">
             <div class="container px-lg-5">
-                <div class="p-4 p-lg-5 bg-light rounded-3 text-center">
+                <div class="p-4 p-lg-5 bg-light rounded-3">
                     <div class="m-4 m-lg-5">
-                        <h3 class="display-10 fw-bold">Ekstraksi Data Publikasi di Sinta berdasarkan Author</h3><br/>
+                        <h3 class="display-10 fw-bold text-center">Ekstraksi Data Publikasi di Sinta berdasarkan Author</h3><br/>
                         <form action="/sinta_author_base" method="POST">
                             <div class="card-body">
                                 <div class="mb-3">
                                     <p class="card-text mb-0 text-center">Silahkan masukan Username, Password, dan ID Sinta anda untuk dapat mengekstraksi data publikasi anda dari Sinta</p><br>
                                     <div class="form-floating mb-3">
                                         <input type="text" class="form-control" name="username" id="username">
-                                        <label for="floatingInput">Username</label>
+                                        <label for="floatingInput">Username Sinta</label>
                                     </div>
                                     <div class="form-floating mb-3">
-                                        <input type="text" class="form-control" name="password" id="password">
-                                        <label for="floatingInput">Password</label>
+                                        <input type="password" class="form-control" name="password" id="password">
+                                        <label for="floatingInput">Password Sinta</label>
                                     </div>
-                                    <div class="form-floating mb-3">
+                                    <div class="form-floating mb-3 form-group">
                                         <input type="text" class="form-control" name="id_sinta" id="id_sinta">
-                                        <label for="floatingInput">ID Sinta</label>
+                                        <label for="floatingInput">ID Sinta (ID sinta yang diinput bisa banyak, contoh: 6813851, 6021756)</label>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Select Entity</label>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="entity" id="author" value="author">
+                                                <label class="form-check-label" for="author">
+                                                    Author
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="entity" id="affiliation" value="affiliation">
+                                                <label class="form-check-label" for="affiliation">
+                                                    Affiliation
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Select Category</label>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="category" id="publications" value="publications">
+                                                <label class="form-check-label" for="publications">
+                                                    Publications
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="category" id="researches" value="researches">
+                                                <label class="form-check-label" for="researches">
+                                                    Researches
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="category" id="iprs" value="iprs">
+                                                <label class="form-check-label" for="iprs">
+                                                    IPRs
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="category" id="books" value="books">
+                                                <label class="form-check-label" for="books">
+                                                    Books
+                                                </label>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

@@ -10,3 +10,5 @@ if __name__ == '__main__':
 
     # You can add other logic here that runs in parallel with the Flask app
     print("Flask app is running in a separate thread.")
+
+
