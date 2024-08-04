@@ -21,6 +21,7 @@ class Preprocessing:
         text_clean = texts.lower()
         # get only alphabet text
         text_clean = re.sub("[^0-9a-z]+", " ", text_clean)
+        text_clean = text_clean.lstrip()
         # tapi masalahnya koma-koma
 
         return text_clean

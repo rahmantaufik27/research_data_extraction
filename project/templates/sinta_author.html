@@ -18,7 +18,7 @@
         <!-- Responsive navbar-->
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
             <div class="container px-lg-5">
-                <a class="navbar-brand" href="#!">Data Research Extraction</a>
+                <a class="navbar-brand" href="{{url_for('main')}}">Data Research Extraction</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
@@ -55,40 +55,64 @@
                                         <div class="col-md-6">
                                             <label class="form-label">Select Entity</label>
                                             <div class="form-check">
-                                                <input class="form-check-input" type="radio" name="entity" id="author" value="author">
-                                                <label class="form-check-label" for="author">
-                                                    Author
+                                                <input class="form-check-input" type="radio" name="entity" id="authors" value="authors" checked>
+                                                <label class="form-check-label" for="authors">
+                                                    Authors
                                                 </label>
                                             </div>
                                             <div class="form-check">
-                                                <input class="form-check-input" type="radio" name="entity" id="affiliation" value="affiliation">
-                                                <label class="form-check-label" for="affiliation">
-                                                    Affiliation
+                                                <input class="form-check-input" type="radio" name="entity" id="affiliations" value="affiliations">
+                                                <label class="form-check-label" for="affiliations">
+                                                    Affiliations
                                                 </label>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <label class="form-label">Select Category</label>
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="category" id="publications" value="publications">
-                                                <label class="form-check-label" for="publications">
-                                                    Publications
+                                                <input class="form-check-input" type="checkbox" name="category" id="scopus" value="scopus" checked>
+                                                <label class="form-check-label" for="scopus">
+                                                    Scopus Publications
                                                 </label>
                                             </div>
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="category" id="researches" value="researches">
+                                                <input class="form-check-input" type="checkbox" name="category" id="wos" value="wos" checked>
+                                                <label class="form-check-label" for="wos">
+                                                    WoS Publications
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="category" id="garuda" value="garuda" checked>
+                                                <label class="form-check-label" for="garuda">
+                                                    Garuda Publications
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="category" id="googlescholar" value="googlescholar" checked>
+                                                <label class="form-check-label" for="googlescholar">
+                                                    Google Scholar Publications
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="category" id="researches" value="researches" checked>
                                                 <label class="form-check-label" for="researches">
                                                     Researches
                                                 </label>
                                             </div>
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="category" id="iprs" value="iprs">
+                                                <input class="form-check-input" type="checkbox" name="category" id="services" value="services" checked>
+                                                <label class="form-check-label" for="services">
+                                                    Services
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="category" id="iprs" value="iprs" checked>
                                                 <label class="form-check-label" for="iprs">
                                                     IPRs
                                                 </label>
                                             </div>
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="category" id="books" value="books">
+                                                <input class="form-check-input" type="checkbox" name="category" id="books" value="books" checked>
                                                 <label class="form-check-label" for="books">
                                                     Books
                                                 </label>
